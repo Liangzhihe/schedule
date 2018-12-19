@@ -1,0 +1,39 @@
+{
+   
+    "isInit": true,
+    "randerData": {
+        "startDate": "2018-01-19",
+        "projectName": "中山项目",
+        "buildNumber": "#1",
+        "scheduleList": [
+            {
+                "color": "#09f",
+                "planName": "砌体工程",
+                "pointlist":[
+                    {
+                        "floor": 1,
+                        "date": "2018-04-13"
+                    },
+                    {
+                        "floor": 2,
+                        "date": "2018-04-18"
+                    }
+                ]
+            },
+            {
+                "color": "#f09",
+                "planName": "主体封顶",
+                "pointlist":[
+                    {
+                        "floor": 1,
+                        "date": "2018-08-13"
+                    },
+                    {
+                        "floor": 2,
+                        "date": "2018-08-28"
+                    }
+                ]
+            }
+        ]
+    }
+}
