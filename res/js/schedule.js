@@ -27,14 +27,21 @@ Schedule.prototype = {
         const buildLayers = data.randerData.buildLayers; //楼层数
         const totalDays = this.toolFunc.calculateRangeDays(data.randerData.startDate, data.randerData.endDate); //预计楼栋建设持续天数
         console.log(totalDays);
-        this.setAxisX(cWidth, cHeight, marginBottom, marginLeft, totalDays); //x轴是时间轴，需要总天数(预计楼栋建设持续时间加上左右预留时间)
-        this.setAxisY(cWidth, cHeight, marginTop, marginBottom, buildLayers); //y轴是楼层轴
+        this.setAxisX({
+            cWidth,
+            cHeight,
+            marginBottom,
+            marginLeft,
+            totalDays
+        }); //x轴是时间轴，需要总天数(预计楼栋建设持续时间加上左右预留时间)
+        //cWidth, cHeight, marginBottom, marginLeft, totalDays
+        this.setAxisY({cWidth, cHeight, marginTop, marginBottom, buildLayers}); //y轴是楼层轴
     },
 
-    setAxisX: function(cWidth,cHeight,marginBottom, marginLeft) {
+    setAxisX: function(obj) {
         console.log("canvas",canvas)
-        const lineX = this.toolFunc.makeLine([0, cHeight-marginBottom, cWidth, cHeight-marginBottom], '#09f');//x轴线
-        // X轴刻度
+        const lineX = this.toolFunc.makeLine([0, obj.cHeight-obj.marginBottom, obj.cWidth, obj.cHeight-obj.marginBottom], '#09f');//x轴线
+        // X轴刻度 根据每月天数设置底部刻度及间隔，类似[31，28，31，30，31，30，31，31，30，31，30，31]这种数组
         // for (let i = 1; i <= 15; i++) {
         //     canvas.add(this.toolFunc.makeLine([marginLeft + 60 * i, cHeight-marginBottom, marginLeft + 60 * i, cHeight-marginBottom - 8], '#000'));
         //     canvas.add(this.toolFunc.makeText(i + '月', {
@@ -44,7 +51,9 @@ Schedule.prototype = {
         // }
         canvas.add(lineX);
     },
-    setAxisY: function() {},
+    setAxisY: function(obj) {
+        console.log(obj);
+    },
 
     toolFunc: {
         makeLine: function (coords, color = 'red') {
