@@ -19,7 +19,7 @@
             <div class="form-group">
                 <label class="col-sm-4 control-label">楼栋选择</label>
                 <div class="col-sm-8 input-group">
-                    <select name="buildNumber" id="buildNumber" class="form-control" autocomplete="off">
+                    <select name="buildSequence" id="buildSequence" class="form-control" autocomplete="off">
                         <option value="#1">#1</option>
                         <option value="#2">#2</option>
                         <option value="#3">#3</option>
@@ -27,7 +27,6 @@
                     </select>
                 </div>
             </div>
-            <button id="buildSelectBtn" type="submit" class="btn btn-add">确定</button>
         </form>
         <form id="init-form" class="schedule-form" style="display:none">
             <div class="form-group">
@@ -55,6 +54,8 @@
             <p>您的浏览器不支持canvas</p>
         </canvas>
     </div>
+
+
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
     <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.0/js/bootstrap.js"></script>
 
@@ -63,9 +64,6 @@
     <script src="https://cdn.bootcss.com/fabric.js/2.4.5/fabric.js"></script>
     <script src="./res/js/schedule.js"></script>
     <script src="./res/js/index.js"></script>
-    <script>
-
-    </script>
 </body>
 
 </html>

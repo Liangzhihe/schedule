@@ -1,14 +1,16 @@
 {
-   
     "isInit": true,
     "randerData": {
-        "startDate": "2018-01-19",
+        "startDate": "2018-11-19",
+        "endDate": "2020-01-25",
         "projectName": "中山项目",
-        "buildNumber": "#1",
+        "buildSequence": "#1",
+        "buildLayers": 30,
         "scheduleList": [
             {
                 "color": "#09f",
                 "planName": "砌体工程",
+                "planType": "line",
                 "pointlist":[
                     {
                         "floor": 1,
@@ -23,6 +25,7 @@
             {
                 "color": "#f09",
                 "planName": "主体封顶",
+                "planType": "line",
                 "pointlist":[
                     {
                         "floor": 1,
