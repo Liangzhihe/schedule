@@ -25,23 +25,32 @@ Schedule.prototype = {
         const marginBottom = 100; //底部留白
         const marginLeft = 50; //左侧留白
         const buildLayers = data.randerData.buildLayers; //楼层数
-        const totalDays = this.toolFunc.calculateRangeDays(data.randerData.startDate, data.randerData.endDate); //预计楼栋建设持续天数
+        const axisStartDate = this.toolFunc.getFirstDate(data.randerData.startDate); //坐标轴初始日期
+        const axisEndDate = this.toolFunc.getAddDate(data.randerData.endDate, 100); //坐标轴结束日期
+        const totalDays = this.toolFunc.calculateRangeDays(axisStartDate, axisEndDate); //坐标轴总天数
         console.log(totalDays);
         this.setAxisX({
             cWidth,
             cHeight,
             marginBottom,
             marginLeft,
+            axisStartDate,
             totalDays
         }); //x轴是时间轴，需要总天数(预计楼栋建设持续时间加上左右预留时间)
-        //cWidth, cHeight, marginBottom, marginLeft, totalDays
-        this.setAxisY({cWidth, cHeight, marginTop, marginBottom, buildLayers}); //y轴是楼层轴
+        this.setAxisY({
+            cWidth,
+            cHeight,
+            marginTop,
+            marginBottom,
+            buildLayers
+        }); //y轴是楼层轴
     },
 
     setAxisX: function(obj) {
         console.log("canvas",canvas)
         const lineX = this.toolFunc.makeLine([0, obj.cHeight-obj.marginBottom, obj.cWidth, obj.cHeight-obj.marginBottom], '#09f');//x轴线
         // X轴刻度 根据每月天数设置底部刻度及间隔，类似[31，28，31，30，31，30，31，31，30，31，30，31]这种数组
+        this.setScale(obj);
         // for (let i = 1; i <= 15; i++) {
         //     canvas.add(this.toolFunc.makeLine([marginLeft + 60 * i, cHeight-marginBottom, marginLeft + 60 * i, cHeight-marginBottom - 8], '#000'));
         //     canvas.add(this.toolFunc.makeText(i + '月', {
@@ -53,6 +62,27 @@ Schedule.prototype = {
     },
     setAxisY: function(obj) {
         console.log(obj);
+    },
+
+    // 设置刻度
+    setScale: function(obj) {
+        console.log("111",obj,canvas);
+        let arr = [];
+        // 剩余时间 totalDays， 月份天数 axisStartDate getMonthDate()
+        this.calculateScale(arr, obj.totalDays, obj.axisStartDate);
+        console.log("222",arr);//递归得出刻度数值
+    },
+
+    calculateScale: function(arr, totalDays, startDate) {
+        let monthDay = this.toolFunc.getMonthDate(startDate);
+        if (totalDays > monthDay) {
+        // if (totalDays > 0) { // 注意边界条件
+            let obj = {date: startDate, day: monthDay};
+            totalDays -= monthDay;
+            startDate = this.toolFunc.getAddDate(startDate,monthDay);
+            arr.push(obj);
+            this.calculateScale(arr, totalDays, startDate);
+        }
     },
 
     toolFunc: {
@@ -92,21 +122,32 @@ Schedule.prototype = {
         },
 
         // 传入日期及天数，返回相加后的新日期
-        addDate: function(date, days) {
-            var newDate = new Date(date.replace('/-/g', '/'));
+        getAddDate: function(date, days) {
+            const newDate = new Date(date.replace('/-/g', '/'));
             newDate.setDate(newDate.getDate() + days);
-            var month = newDate.getMonth() + 1;
-            var day = newDate.getDate();
-            var time = newDate.getFullYear() + "-" + month + "-" + day;
-            console.log(time);
+            const month = newDate.getMonth() + 1;
+            const day = newDate.getDate();
+            const time = newDate.getFullYear() + "-" + month + "-" + day;
+            // console.log(time);
             return time;
         },
 
         // 获取该月份天数
-        mGetDate: function(year, month) {
-            var d = new Date(year, month, 0);
+        getMonthDate: function(date) {
+            const newDate = new Date(date.replace('/-/g', '/'));
+            const month =  newDate.getMonth() + 1;
+            const d = new Date(newDate.getFullYear(), month, 0);
             return d.getDate();
+        },
+
+        // 获取日期所在月第一日
+        getFirstDate: function(startDate) {
+            const newDate = new Date(startDate.replace('/-/g', '/'));
+            const month =  newDate.getMonth() + 1;
+            const firstDate = newDate.getFullYear() + '-' + month + '-' + '01';
+            return firstDate;
         }
+
     }
 }
 
