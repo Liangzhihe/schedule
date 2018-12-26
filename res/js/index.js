@@ -23,12 +23,10 @@ $(function () {
     }
 
     function randerSchedule(data) {
-        //此处先清空画布，然后根据数据生成图表
+        //此处先清空画布，然后根据数据生成图表（计划图表）
         console.log(data);
-
         const sche = new Schedule('schedule', data);
         sche.init();
-
     }
 
     function showInitForm() {
@@ -37,7 +35,7 @@ $(function () {
     }
 
     function getEndDate(startDate, template) {
-        const endDate = '2020-12-15';
+        const endDate = '2020-1-15';
         return endDate;
     }
 
