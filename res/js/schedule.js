@@ -29,11 +29,13 @@ Schedule.prototype = {
         const marginTop = 100; //顶部留白
         const marginBottom = 100; //底部留白
         const marginLeft = 50; //左侧留白
+        const projectName = data.randerData.projectName;
         const buildLayers = data.randerData.buildLayers; //楼层数
         const buildSequence = data.randerData.buildSequence; //楼栋号
         const axisStartDate = this.toolFunc.getFirstDate(data.randerData.startDate); //坐标轴初始日期
         const axisEndDate = this.toolFunc.getAddDate(data.randerData.endDate, 100); //坐标轴结束日期 （相对于计划结束日期又增加了100天）
         const totalDays = this.toolFunc.calculateRangeDays(axisStartDate, axisEndDate); //坐标轴总天数
+        
         console.log(totalDays);
         this.setAxisX({
             canvas,
@@ -53,11 +55,12 @@ Schedule.prototype = {
             marginBottom,
             buildLayers
         }); //y轴是楼层轴
-        this.showFloorState({
+        this.setFloorState({
             canvas,
             cHeight,
             marginTop,
             marginBottom,
+            projectName,
             buildLayers,
             buildSequence
         }); //楼层状态显示(当传入真实进度数据时，通过遍历比较真实进度数据与真实计划数据，根据比较结果改变其状态)
@@ -96,6 +99,9 @@ Schedule.prototype = {
             }
             const newDate = new Date(element.date.replace('/-/g', '/'));
             const month =  newDate.getMonth() + 1;
+            if (month === 12) {
+                canvas.add(this.toolFunc.makeText(newDate.getFullYear().toString(), {left:obj.marginLeft + (w/obj.totalDays)*(l-5),top: obj.cHeight - obj.marginBottom + 18}));
+            }
             canvas.add(this.toolFunc.makeLine([obj.marginLeft + (w/obj.totalDays)*l, obj.cHeight - obj.marginBottom, obj.marginLeft + (w/obj.totalDays)*l, obj.cHeight - obj.marginBottom - 8], '#09f'));
             canvas.add(this.toolFunc.makeText(month.toString() + '月', {left:obj.marginLeft + (w/obj.totalDays)*(l-element.day/1.5),top: obj.cHeight - obj.marginBottom + 5}));
         }
@@ -127,10 +133,12 @@ Schedule.prototype = {
     },
 
     // 设置每楼层状态显示（工期提前或延误）
-    showFloorState: function(obj) {
+    setFloorState: function(obj) {
         //自定义楼层状态类型
+        const that = this;
         const canvas = obj.canvas;
         const h = obj.cHeight - obj.marginBottom - obj.marginTop;
+        const projectName = obj.projectName;
         const buildLayers = obj.buildLayers;
         const buildSequence = obj.buildSequence;
         const LabeledRect = this.toolFunc.customFloor();
@@ -141,22 +149,29 @@ Schedule.prototype = {
                 left:0,
                 top: (obj.cHeight-obj.marginBottom)-(i/buildLayers)*h,
                 buildName: buildSequence,
-                floor: i
+                floor: i,
+                type: 'floorState'
             })
             canvas.add(temp);
         }
         canvas.on('mouse:down', function (options) {
             console.log(options.e.clientX, options.e.clientY, options.target);
             if (options.target) {
-                if (options.target.buildName) {
-                    console.log('sss', options.target.buildName, options.target.floor);
+                if (options.target.type === 'floorState') {
+                    console.log('floorState', options.target);
+                    that.showFloorState({projectName});
+                    // canvas.clear();
                     // options.target.animate('left', '+=50', {
                     //     onChange: canvas.renderAll.bind(canvas),
                     // });
                 }
             }
         });
+    },
 
+    showFloorState: function (obj) {
+        // 显示当前选中楼层延期或提前的进度状态
+        console.log(obj.projectName);
     },
 
     toolFunc: {
@@ -230,6 +245,7 @@ Schedule.prototype = {
                     this.callSuper('initialize', options);
                     this.set('buildName', options.buildName || '');
                     this.set('floor', options.floor || '');
+                    this.set('type', options.type || '');
                     this.set({
                         fill: '#ccc',
                         borderColor: '#09f',
@@ -242,6 +258,7 @@ Schedule.prototype = {
                     return fabric.util.object.extend(this.callSuper('toObject'), {
                         buildName: this.get('buildName'),
                         floor: this.get('floor'),
+                        type: this.get('type'),
                     });
                 },
                 _render: function (ctx) {
