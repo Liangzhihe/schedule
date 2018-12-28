@@ -12,7 +12,7 @@ $(function () {
         }).then(function (response) {
             // console.log(response.data);
             const isInit = response.data.isInit; //是否已经进行过初始化
-            !isInit ? randerSchedule(response.data.randerData) : showInitForm();
+            isInit ? randerSchedule(response.data) : showInitForm();
         }).catch(function (err) {
             console.log(err);
         })
@@ -52,11 +52,39 @@ $(function () {
                 "planType": "line",
                 "pointList": [{
                         "floor": 1,
-                        "date": "2018-04-13"
+                        "date": "2019-01-13"
                     },
                     {
                         "floor": 2,
-                        "date": "2018-04-21"
+                        "date": "2019-01-28"
+                    },
+                    {
+                        "floor": 3,
+                        "date": "2019-02-13"
+                    },
+                    {
+                        "floor": 4,
+                        "date": "2019-02-20"
+                    },
+                    {
+                        "floor": 5,
+                        "date": "2019-02-28"
+                    },
+                    {
+                        "floor": 6,
+                        "date": "2019-03-08"
+                    },
+                    {
+                        "floor": 7,
+                        "date": "2019-03-13"
+                    },
+                    {
+                        "floor": 8,
+                        "date": "2019-03-23"
+                    },
+                    {
+                        "floor": 9,
+                        "date": "2019-04-13"
                     }
                 ]
             },
@@ -66,11 +94,11 @@ $(function () {
                 "planType": "line",
                 "pointList": [{
                         "floor": 1,
-                        "date": "2018-08-13"
+                        "date": "2019-03-13"
                     },
                     {
                         "floor": 2,
-                        "date": "2018-08-28"
+                        "date": "2019-03-28"
                     }
                 ]
             }

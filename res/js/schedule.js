@@ -11,11 +11,14 @@ let staticCanvas = {};
 Schedule.prototype = {
     constructor: Schedule,
     init: function () {
-        // 1.每次初始化之前删除前面的canvas对象delete，创建新对象
-        // 2.每次初始化之前清除当前的canvas对象上的图像clear，仍使用该对象
+        // 每次初始化之前清除当前的canvas对象上的图像clear，仍使用该对象
         console.log("class", this.id, this.data);
         // const canvas = new fabric.Canvas(this.id);
         const canvas = this.getFabricCanvas(this.id);
+        if (JSON.stringify(staticCanvas) === "{}") {
+            //首次加载时注册事件
+            this.addEvent(canvas);
+        };
         staticCanvas = canvas; // 保存生成的fabric对象至全局变量staticCanvas
         const randerData = this.data.randerData;
 
@@ -45,7 +48,7 @@ Schedule.prototype = {
     },
 
     // 获取fabric对象
-    getFabricCanvas: function(id) {
+    getFabricCanvas: function (id) {
         // console.log("staticCanvas",staticCanvas);
         if (JSON.stringify(staticCanvas) === "{}") {
             console.log('首次加载');
@@ -57,8 +60,8 @@ Schedule.prototype = {
 
     // 清空画布
     clean: function (canvas) {
-        // console.log(canvas)
         canvas.clear();
+        // canvas.removeListeners();
     },
 
     basicSetUp: function (canvas) {
@@ -66,20 +69,24 @@ Schedule.prototype = {
         canvas.hoverCursor = 'pointer';
     },
 
-    setAxis: function(obj) {
-        const canvas = obj.canvas;
+    setAxis: function (obj) {
+        const {
+            canvas,
+            projectName,
+            buildLayers,
+            buildSequence,
+            axisStartDate,
+            totalDays
+        } = obj;
         const cWidth = canvas.width;
         const cHeight = canvas.height;
         const marginTop = this.marginTop; //顶部留白
         const marginBottom = this.marginBottom; //底部留白
         const marginLeft = this.marginLeft; //左侧留白
-        const projectName = obj.projectName;
-        const buildLayers = obj.buildLayers; //楼层数
-        const buildSequence = obj.buildSequence; //楼栋号
-        const axisStartDate = obj.axisStartDate;
-        const totalDays = obj.totalDays;
+        // buildLayers; //楼层数
+        // buildSequence; //楼栋号
 
-        console.log(totalDays);
+        // console.log(totalDays);
         this.setAxisX({
             canvas,
             cWidth,
@@ -111,17 +118,17 @@ Schedule.prototype = {
     },
 
     // x轴
-    setAxisX: function(obj) {
-        console.log("canvas",obj.canvas);
+    setAxisX: function (obj) {
+        console.log("canvas", obj.canvas);
         const canvas = obj.canvas;
-        const lineX = this.toolFunc.makeLine([0, obj.cHeight-obj.marginBottom, obj.cWidth, obj.cHeight-obj.marginBottom], '#09f');//x轴线
+        const lineX = this.toolFunc.makeLine([0, obj.cHeight - obj.marginBottom, obj.cWidth, obj.cHeight - obj.marginBottom], '#09f'); //x轴线
         canvas.add(lineX);
         this.setScaleX(obj);
         this.showTodayLine(obj);
     },
 
     // y轴
-    setAxisY: function(obj) {
+    setAxisY: function (obj) {
         const canvas = obj.canvas;
         const lineY = this.toolFunc.makeLine([obj.marginLeft, obj.marginTop, obj.marginLeft, obj.cHeight], '#09f');
         this.setScaleY(obj);
@@ -129,13 +136,12 @@ Schedule.prototype = {
     },
 
     // 设置x轴刻度
-    setScaleX: function(obj) {
+    setScaleX: function (obj) {
         // console.log(this);
         // console.log("111",obj,canvas);
         const canvas = obj.canvas;
         let arr = [];
-        const scaleArr = this.calculateScale(arr, obj.totalDays, obj.axisStartDate);
-        // console.log("scaleArr",scaleArr);//递归得出刻度数值
+        const scaleArr = this.calculateScale(arr, obj.totalDays, obj.axisStartDate); //递归得出刻度数值
         const len = scaleArr.length;
         const w = obj.cWidth - obj.marginLeft;
         for (let i = 0; i < len; i++) {
@@ -145,22 +151,32 @@ Schedule.prototype = {
                 l += scaleArr[j].day;
             }
             const newDate = new Date(element.date.replace('/-/g', '/'));
-            const month =  newDate.getMonth() + 1;
+            const month = newDate.getMonth() + 1;
             if (month === 12) {
-                canvas.add(this.toolFunc.makeText((newDate.getFullYear() + 1).toString(), {left:obj.marginLeft + (w/obj.totalDays)*(l-5),top: obj.cHeight - obj.marginBottom + 18}));
+                // 坐标轴添加年份指示
+                canvas.add(this.toolFunc.makeText((newDate.getFullYear() + 1).toString(), {
+                    left: obj.marginLeft + (w / obj.totalDays) * (l - 5),
+                    top: obj.cHeight - obj.marginBottom + 18
+                }));
             }
-            canvas.add(this.toolFunc.makeLine([obj.marginLeft + (w/obj.totalDays)*l, obj.cHeight - obj.marginBottom, obj.marginLeft + (w/obj.totalDays)*l, obj.cHeight - obj.marginBottom - 8], '#09f'));
-            canvas.add(this.toolFunc.makeText(month.toString() + '月', {left:obj.marginLeft + (w/obj.totalDays)*(l-element.day/1.5),top: obj.cHeight - obj.marginBottom + 5}));
+            canvas.add(this.toolFunc.makeLine([obj.marginLeft + (w / obj.totalDays) * l, obj.cHeight - obj.marginBottom, obj.marginLeft + (w / obj.totalDays) * l, obj.cHeight - obj.marginBottom - 8], '#09f'));
+            canvas.add(this.toolFunc.makeText(month.toString() + '月', {
+                left: obj.marginLeft + (w / obj.totalDays) * (l - element.day / 1.5),
+                top: obj.cHeight - obj.marginBottom + 5
+            }));
         }
     },
 
-    calculateScale: function(arr, totalDays, axisStartDate) {
+    calculateScale: function (arr, totalDays, axisStartDate) {
         let monthDay = this.toolFunc.getMonthDate(axisStartDate);
         if (totalDays > monthDay) {
-        // if (totalDays > 0) { // 注意边界条件
-            let obj = {date: axisStartDate, day: monthDay};
+            // if (totalDays > 0) { // 注意边界条件
+            let obj = {
+                date: axisStartDate,
+                day: monthDay
+            };
             totalDays -= monthDay;
-            axisStartDate = this.toolFunc.getAddDate(axisStartDate,monthDay);
+            axisStartDate = this.toolFunc.getAddDate(axisStartDate, monthDay);
             arr.push(obj);
             this.calculateScale(arr, totalDays, axisStartDate);
             return arr;
@@ -168,66 +184,84 @@ Schedule.prototype = {
     },
 
     // 显示今日日期虚线
-    showTodayLine: function(obj) {
-        console.log("showTodayLine",obj);
+    showTodayLine: function (obj) {
+        console.log("showTodayLine", obj);
         const today = this.toolFunc.getToday();
         const axisStartDate = obj.axisStartDate;
         const l = this.toolFunc.calculateRangeDays(axisStartDate, today);
         const t = obj.totalDays;
         const w = obj.cWidth - obj.marginLeft;
         const canvas = obj.canvas;
-        console.log(w,l,t);
+        console.log(w, l, t);
         canvas.add(this.toolFunc.makeDashedLine([(l / t) * w + obj.marginLeft, obj.cHeight - obj.marginBottom, (l / t) * w + obj.marginLeft, obj.marginTop], '#09f'));
-        canvas.add(this.toolFunc.makeText(today, {left:(l / t) * w + obj.marginLeft - 28,top: obj.marginTop - 12 }));
+        canvas.add(this.toolFunc.makeText(today, {
+            left: (l / t) * w + obj.marginLeft - 28,
+            top: obj.marginTop - 12
+        }));
     },
 
     // 设置y轴刻度
-    setScaleY: function(obj) {
-        const canvas = obj.canvas;
-        const h = obj.cHeight - obj.marginBottom - obj.marginTop;
-        const buildLayers = obj.buildLayers;
-        for (let i = 1; i <= buildLayers; i++) {
-           canvas.add(this.toolFunc.makeLine([obj.marginLeft,(obj.cHeight-obj.marginBottom)-(i/buildLayers)*h,obj.marginLeft+5,(obj.cHeight-obj.marginBottom)-(i/buildLayers)*h], '#09f'));
-           canvas.add(this.toolFunc.makeText(i.toString(), {left:obj.marginLeft-15,top: (obj.cHeight-obj.marginBottom)-(i/buildLayers)*h+2 }));
-        }
+    setScaleY: function (obj) {
+        const {
+            canvas,
+            cHeight,
+            marginTop,
+            marginLeft,
+            marginBottom,
+            buildLayers
+        } = obj;
+        const h = cHeight - marginBottom - marginTop;
 
+        for (let i = 1; i <= buildLayers; i++) {
+            canvas.add(this.toolFunc.makeLine([marginLeft, (cHeight - marginBottom) - (i / buildLayers) * h, marginLeft + 5, (cHeight - marginBottom) - (i / buildLayers) * h], '#09f'));
+            canvas.add(this.toolFunc.makeText(i.toString(), {
+                left: marginLeft - 15,
+                top: (cHeight - marginBottom) - (i / buildLayers) * h + 2
+            }));
+        }
     },
 
     // 设置每楼层状态显示（工期提前或延误）
-    setFloorState: function(obj) {
+    setFloorState: function (obj) {
         //自定义楼层状态类型
+        const {
+            canvas,
+            cHeight,
+            marginBottom,
+            marginTop,
+            projectName,
+            buildLayers,
+            buildSequence
+        } = obj;
         const that = this;
-        const canvas = obj.canvas;
-        const h = obj.cHeight - obj.marginBottom - obj.marginTop;
-        const projectName = obj.projectName;
-        const buildLayers = obj.buildLayers;
-        const buildSequence = obj.buildSequence;
+        const h = cHeight - marginBottom - marginTop;
         const LabeledRect = this.toolFunc.customFloor();
         for (let i = 1; i <= buildLayers; i++) {
             const temp = new LabeledRect({
                 width: 30,
-                height: h/buildLayers,
-                left:0,
-                top: (obj.cHeight-obj.marginBottom)-(i/buildLayers)*h,
+                height: h / buildLayers,
+                left: 0,
+                top: (cHeight - marginBottom) - (i / buildLayers) * h,
                 buildSequence: buildSequence,
                 floor: i,
                 type: 'floorState'
             })
             canvas.add(temp);
         }
-        canvas.on('mouse:down', function (options) {
-            console.log(options.e.clientX, options.e.clientY, options.target);
-            if (options.target) {
-                if (options.target.type === 'floorState') {
-                    console.log('floorState', options.target);
-                    that.showFloorState({projectName});
-                    // canvas.clear();
-                    // options.target.animate('left', '+=50', {
-                    //     onChange: canvas.renderAll.bind(canvas),
-                    // });
-                }
-            }
-        });
+        // canvas.on('mouse:down', function (options) {
+        //     console.log(options.e.clientX, options.e.clientY, options.target);
+        //     if (options.target) {
+        //         if (options.target.type === 'floorState') {
+        //             console.log('floorState', options.target);
+        //             that.showFloorState({
+        //                 projectName
+        //             });
+        //             // options.target.animate('left', '+=50', {
+        //             //     onChange: canvas.renderAll.bind(canvas),
+        //             // });
+        //         }
+        //     }
+        // });
     },
 
     showFloorState: function (obj) {
@@ -236,23 +270,27 @@ Schedule.prototype = {
     },
 
     // 根据数据展示进度计划
-    showPlan: function(obj) {
+    showPlan: function (obj) {
         console.log("进度计划", obj.randerData);
-        const canvas = obj.canvas;
+        const {
+            canvas,
+            axisStartDate,
+            totalDays,
+            randerData: {
+                projectName,
+                buildSequence,
+                buildLayers,
+                scheduleList
+            }
+        } = obj;
+        //axisStartDate; //坐标轴初始日期
         const cWidth = canvas.width;
         const cHeight = canvas.height;
         const marginTop = this.marginTop; //顶部留白
         const marginBottom = this.marginBottom; //底部留白
         const marginLeft = this.marginLeft; //左侧留白
-        const axisStartDate = obj.axisStartDate; //坐标轴初始日期
-        const totalDays = obj.totalDays;
-        console.log("showPlan totalDays",totalDays);
+        // console.log("showPlan totalDays",totalDays);
 
-        const projectName = obj.randerData.projectName;
-        const buildSequence = obj.randerData.buildSequence;
-        const buildLayers = obj.randerData.buildLayers;
-
-        const scheduleList = obj.randerData.scheduleList;
         const len = scheduleList.length;
         for (let i = 0; i < len; i++) {
             this.addSinglePlan({
@@ -267,12 +305,12 @@ Schedule.prototype = {
                 projectName,
                 buildSequence,
                 buildLayers,
-                data:scheduleList[i],
+                data: scheduleList[i],
             });
         }
     },
 
-    addSinglePlan: function(obj) {
+    addSinglePlan: function (obj) {
         // console.log("AddSinglePlan",obj.data);
         const planType = obj.data.planType;
         switch (planType) {
@@ -288,52 +326,78 @@ Schedule.prototype = {
         }
     },
 
-    addPlanLine: function(obj) {
-        // temp
+    addPlanLine: function (obj) {
+        const {
+            canvas,
+            data,
+            buildSequence,
+            axisStartDate,
+            totalDays,
+            cWidth,
+            marginLeft,
+            cHeight,
+            marginBottom,
+            marginTop,
+            buildLayers
+        } = obj; //解构
         const that = this;
-        const canvas = obj.canvas;
-        const data = obj.data;
-        const pointList = obj.data.pointList;
+        const pointList = data.pointList;
 
-        const buildSequence = obj.buildSequence;
-        const axisStartDate = obj.axisStartDate;
-        const totalDays = obj.totalDays;
-        const cWidth = obj.cWidth;
-        const marginLeft = obj.marginLeft;
         const w = cWidth - marginLeft; //坐标轴实际刻度长
-        const cHeight = obj.cHeight;
-        const marginBottom = obj.marginBottom;
-        const marginTop = obj.marginTop;
         const h = cHeight - marginBottom - marginTop;
-        const buildLayers = obj.buildLayers;
-
         const PlanPoint = this.toolFunc.customPlanPoint();
 
         pointList.forEach(item => {
             const t = that.toolFunc.calculateRangeDays(axisStartDate, item.date);
-            const left = (t/totalDays)*w + marginLeft;
-            const half = (h/buildLayers)/2;
-            const top = cHeight - marginBottom - (item.floor/buildLayers)*h + half;
-
-            console.log('half',half);
-            const temp = new PlanPoint({
+            const left = (t / totalDays) * w + marginLeft;
+            const half = (h / buildLayers) / 2;
+            const top = cHeight - marginBottom - (item.floor / buildLayers) * h + half;
+            const point = new PlanPoint({
                 left: left,
                 top: top,
                 stroke: data.color,
                 buildSequence: buildSequence,
                 planName: data.planName,
                 floor: item.floor,
-                planDate:item.date,
+                planDate: item.date,
                 type: 'planPoint'
             });
-            canvas.add(temp);
+            canvas.add(point);
         });
-
-        console.log('addPlanLine',obj);
+        console.log('addPlanLine', obj);
     },
 
-    addPlanRect: function(obj) {
-        console.log('addPlanRect',obj);
+    addPlanRect: function (obj) {
+        console.log('addPlanRect', obj);
+    },
+
+    // 添加事件（仅在canvas初次加载时添加,防止重复添加导致的bug）
+    addEvent: function(canvas) {
+        const that = this;
+        canvas.on('mouse:down', function (options) {
+            console.log(options.e.clientX, options.e.clientY, options.target);
+            if (options.target) {
+                switch (options.target.type) {
+                    case 'floorState':
+                        {
+                            console.log('floorState', options.target);
+                        }
+                        break;
+                    case 'planPoint':
+                        {
+                            console.log('planPoint', options.target);
+                            // 弹出框，进行数值调整
+                            // 更新本地数据
+                            // 上传数据
+                            // 上传数据成功后改变对象位置
+                        }
+                        break;
+                    default:
+                        console.log('未匹配类型');
+                        break;
+                }
+            }
+        });
     },
 
     toolFunc: {
@@ -350,7 +414,7 @@ Schedule.prototype = {
         makeDashedLine: function (coords, color = '#ccc') {
             return new fabric.Line(coords, {
                 stroke: color,
-                strokeDashArray: [6,3],
+                strokeDashArray: [6, 3],
                 strokeWidth: 1,
                 selectable: false,
                 evented: false,
@@ -373,7 +437,7 @@ Schedule.prototype = {
             //Date.parse()静态方法的返回值为1970年1月1日午时到当前字符串时间的毫秒数，返回值为整数
             //如果传入的日期只包含年月日不包含时分秒，则默认取的毫秒数为yyyy/mm/dd 00:00:00
             //取的是0时0分0秒的毫秒数，如果传入的是2015/07/03 12:20:12则取值为该时间点的毫秒数
-            console.log(dateString1, dateString2);
+            // console.log(dateString1, dateString2);
             const startDate = Date.parse(dateString1.replace('/-/g', '/'));
             const endDate = Date.parse(dateString2.replace('/-/g', '/'));
             // console.log(startDate, endDate);
@@ -386,7 +450,7 @@ Schedule.prototype = {
         },
 
         // 传入日期及天数，返回相加后的新日期
-        getAddDate: function(date, days) {
+        getAddDate: function (date, days) {
             const newDate = new Date(date.replace('/-/g', '/'));
             newDate.setDate(newDate.getDate() + days);
             const month = newDate.getMonth() + 1;
@@ -397,23 +461,23 @@ Schedule.prototype = {
         },
 
         // 获取该月份天数
-        getMonthDate: function(date) {
+        getMonthDate: function (date) {
             const newDate = new Date(date.replace('/-/g', '/'));
-            const month =  newDate.getMonth() + 1;
+            const month = newDate.getMonth() + 1;
             const d = new Date(newDate.getFullYear(), month, 0);
             return d.getDate();
         },
 
         // 获取日期所在月第一日
-        getFirstDate: function(startDate) {
+        getFirstDate: function (startDate) {
             const newDate = new Date(startDate.replace('/-/g', '/'));
-            const month =  newDate.getMonth() + 1;
+            const month = newDate.getMonth() + 1;
             const firstDate = newDate.getFullYear() + '-' + month + '-' + '01';
             return firstDate;
         },
 
         // 自定义楼层状态类型
-        customFloor: function() {
+        customFloor: function () {
             const LabeledRect = fabric.util.createClass(fabric.Rect, {
                 type: 'labeledRect',
                 initialize: function (options = {}) {
@@ -445,7 +509,7 @@ Schedule.prototype = {
         },
 
         // 自定义任务计划点类型
-        customPlanPoint: function() {
+        customPlanPoint: function () {
             const PlanPoint = fabric.util.createClass(fabric.Circle, {
                 type: 'PlanPoint',
                 initialize: function (options = {}) {
