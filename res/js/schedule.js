@@ -209,7 +209,7 @@ Schedule.prototype = {
                 height: h/buildLayers,
                 left:0,
                 top: (obj.cHeight-obj.marginBottom)-(i/buildLayers)*h,
-                buildName: buildSequence,
+                buildSequence: buildSequence,
                 floor: i,
                 type: 'floorState'
             })
@@ -248,11 +248,25 @@ Schedule.prototype = {
         const totalDays = obj.totalDays;
         console.log("showPlan totalDays",totalDays);
 
+        const projectName = obj.randerData.projectName;
+        const buildSequence = obj.randerData.buildSequence;
+        const buildLayers = obj.randerData.buildLayers;
+
         const scheduleList = obj.randerData.scheduleList;
         const len = scheduleList.length;
         for (let i = 0; i < len; i++) {
             this.addSinglePlan({
                 canvas,
+                cWidth,
+                cHeight,
+                marginTop,
+                marginBottom,
+                marginLeft,
+                axisStartDate,
+                totalDays,
+                projectName,
+                buildSequence,
+                buildLayers,
                 data:scheduleList[i],
             });
         }
@@ -276,28 +290,45 @@ Schedule.prototype = {
 
     addPlanLine: function(obj) {
         // temp
+        const that = this;
         const canvas = obj.canvas;
+        const data = obj.data;
+        const pointList = obj.data.pointList;
+
+        const buildSequence = obj.buildSequence;
+        const axisStartDate = obj.axisStartDate;
+        const totalDays = obj.totalDays;
+        const cWidth = obj.cWidth;
+        const marginLeft = obj.marginLeft;
+        const w = cWidth - marginLeft; //坐标轴实际刻度长
+        const cHeight = obj.cHeight;
+        const marginBottom = obj.marginBottom;
+        const marginTop = obj.marginTop;
+        const h = cHeight - marginBottom - marginTop;
+        const buildLayers = obj.buildLayers;
+
         const PlanPoint = this.toolFunc.customPlanPoint();
-        const temp = new PlanPoint({
-            left: 150,
-            top: 150,
-            stroke: obj.data.color,
-            buildName: '#1',
-            planName: '主体工程',
-            floor: '15',
-            planDate: '2018-12-08',
-            type: 'planPoint'
+
+        pointList.forEach(item => {
+            const t = that.toolFunc.calculateRangeDays(axisStartDate, item.date);
+            const left = (t/totalDays)*w + marginLeft;
+            const half = (h/buildLayers)/2;
+            const top = cHeight - marginBottom - (item.floor/buildLayers)*h + half;
+
+            console.log('half',half);
+            const temp = new PlanPoint({
+                left: left,
+                top: top,
+                stroke: data.color,
+                buildSequence: buildSequence,
+                planName: data.planName,
+                floor: item.floor,
+                planDate:item.date,
+                type: 'planPoint'
+            });
+            canvas.add(temp);
         });
-        const temp2 = new PlanPoint({
-            left: 250,
-            top: 150,
-            stroke: '#09f',
-            buildName: '#1',
-            planName: '主体工程',
-            floor: '15',
-            planDate: '2018-12-08'
-        });
-        canvas.add(temp,temp2);
+
         console.log('addPlanLine',obj);
     },
 
@@ -387,7 +418,7 @@ Schedule.prototype = {
                 type: 'labeledRect',
                 initialize: function (options = {}) {
                     this.callSuper('initialize', options);
-                    this.set('buildName', options.buildName || '');
+                    this.set('buildSequence', options.buildSequence || '');
                     this.set('floor', options.floor || '');
                     this.set('type', options.type || 'floorState');
                     this.set({
@@ -400,7 +431,7 @@ Schedule.prototype = {
                 },
                 toObject: function () {
                     return fabric.util.object.extend(this.callSuper('toObject'), {
-                        buildName: this.get('buildName'),
+                        buildSequence: this.get('buildSequence'),
                         floor: this.get('floor'),
                         type: this.get('type'),
                     });
@@ -419,7 +450,7 @@ Schedule.prototype = {
                 type: 'PlanPoint',
                 initialize: function (options = {}) {
                     this.callSuper('initialize', options);
-                    this.set('buildName', options.buildName || '');
+                    this.set('buildSequence', options.buildSequence || '');
                     this.set('planName', options.planName || '');
                     this.set('floor', options.floor || '');
                     this.set('planDate', options.planDate || '');
@@ -436,7 +467,7 @@ Schedule.prototype = {
                 },
                 toObject: function () {
                     return fabric.util.object.extend(this.callSuper('toObject'), {
-                        buildName: this.get('buildName'),
+                        buildSequence: this.get('buildSequence'),
                         planName: this.get('planName'),
                         floor: this.get('floor'),
                         planDate: this.get('planDate'),

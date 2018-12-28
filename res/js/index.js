@@ -50,7 +50,7 @@ $(function () {
                 "color": "#09f",
                 "planName": "砌体工程",
                 "planType": "line",
-                "pointlist": [{
+                "pointList": [{
                         "floor": 1,
                         "date": "2018-04-13"
                     },
@@ -64,7 +64,7 @@ $(function () {
                 "color": "#f09",
                 "planName": "主体封顶",
                 "planType": "line",
-                "pointlist": [{
+                "pointList": [{
                         "floor": 1,
                         "date": "2018-08-13"
                     },
