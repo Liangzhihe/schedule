@@ -12,7 +12,7 @@ $(function () {
         }).then(function (response) {
             // console.log(response.data);
             const isInit = response.data.isInit; //是否已经进行过初始化
-            isInit ? randerSchedule(response.data) : showInitForm();
+            isInit ? renderSchedule(response.data) : showInitForm();
         }).catch(function (err) {
             console.log(err);
         })
@@ -22,7 +22,7 @@ $(function () {
         return '中山项目';
     }
 
-    function randerSchedule(data) {
+    function renderSchedule(data) {
         //此处先清空画布，然后根据数据生成图表（计划图表）
         console.log(data);
         const sche = new Schedule('schedule', data);
@@ -41,7 +41,7 @@ $(function () {
 
     // 根据模板获取楼层数（实际情况未知）
     function getBuildLayersByTemplate(template) {
-        return 28;
+        return 30;
     }
 
     // 根据开始日期及模板生成各进度计划数据
@@ -110,7 +110,7 @@ $(function () {
         var projectName = getProjectName();
         const data = {
             "isInit": true,
-            "randerData": {
+            "renderData": {
                 "startDate": startDate,
                 "endDate": getEndDate(startDate, template),
                 "projectName": projectName,
@@ -126,7 +126,7 @@ $(function () {
         //根据开始日期及模板生成标准格式数据，然后根据数据渲染图表
         const start = dateFormat(startDate);
         const data = calculate(start, template, buildSequence);
-        randerSchedule(data);
+        renderSchedule(data);
     }
 
     function dateFormat(dateObj) {

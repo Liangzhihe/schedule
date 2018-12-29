@@ -6,3 +6,10 @@
 .schedule-canvas {
     border: 1px solid #ccc;
 }
+
+#changeDate {
+    display: none;
+    position: fixed;
+    padding: 10px;
+    border: 1px solid #09f;
+}

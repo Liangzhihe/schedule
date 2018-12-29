@@ -14,28 +14,28 @@ Schedule.prototype = {
         // 每次初始化之前清除当前的canvas对象上的图像clear，仍使用该对象
         console.log("class", this.id, this.data);
         // const canvas = new fabric.Canvas(this.id);
+        const renderData = this.data.renderData;
+        const axisStartDate = this.toolFunc.getFirstDate(renderData.startDate); //坐标轴初始日期
+        const axisEndDate = this.toolFunc.getAddDate(renderData.endDate, 100); //坐标轴结束日期 （相对于计划结束日期又增加了100天）
+        const totalDays = this.toolFunc.calculateRangeDays(axisStartDate, axisEndDate); //坐标轴总天数
+
         const canvas = this.getFabricCanvas(this.id);
         if (JSON.stringify(staticCanvas) === "{}") {
             //首次加载时注册事件
-            this.addEvent(canvas);
+            this.addEvent(canvas, totalDays);
         };
         staticCanvas = canvas; // 保存生成的fabric对象至全局变量staticCanvas
-        const randerData = this.data.randerData;
-
-        const axisStartDate = this.toolFunc.getFirstDate(randerData.startDate); //坐标轴初始日期
-        const axisEndDate = this.toolFunc.getAddDate(randerData.endDate, 100); //坐标轴结束日期 （相对于计划结束日期又增加了100天）
-        const totalDays = this.toolFunc.calculateRangeDays(axisStartDate, axisEndDate); //坐标轴总天数
 
         this.clean(canvas);
         this.basicSetUp(canvas);
         // this.setAxis(canvas, this.data); // 此处可以优化，不需要将所有数据传入
         this.setAxis({
             canvas,
-            projectName: randerData.projectName,
-            buildLayers: randerData.buildLayers,
-            buildSequence: randerData.buildSequence,
-            startDate: randerData.startDate,
-            endDate: randerData.endDate,
+            projectName: renderData.projectName,
+            buildLayers: renderData.buildLayers,
+            buildSequence: renderData.buildSequence,
+            startDate: renderData.startDate,
+            endDate: renderData.endDate,
             axisStartDate,
             totalDays
         });
@@ -43,7 +43,7 @@ Schedule.prototype = {
             canvas,
             axisStartDate,
             totalDays,
-            randerData
+            renderData
         });
     },
 
@@ -271,12 +271,12 @@ Schedule.prototype = {
 
     // 根据数据展示进度计划
     showPlan: function (obj) {
-        console.log("进度计划", obj.randerData);
+        console.log("进度计划", obj.renderData);
         const {
             canvas,
             axisStartDate,
             totalDays,
-            randerData: {
+            renderData: {
                 projectName,
                 buildSequence,
                 buildLayers,
@@ -372,10 +372,10 @@ Schedule.prototype = {
     },
 
     // 添加事件（仅在canvas初次加载时添加,防止重复添加导致的bug）
-    addEvent: function(canvas) {
+    addEvent: function(canvas, totalDays) {
         const that = this;
         canvas.on('mouse:down', function (options) {
-            console.log(options.e.clientX, options.e.clientY, options.target);
+            // console.log(options.e.clientX, options.e.clientY, options.target);
             if (options.target) {
                 switch (options.target.type) {
                     case 'floorState':
@@ -385,16 +385,60 @@ Schedule.prototype = {
                         break;
                     case 'planPoint':
                         {
-                            console.log('planPoint', options.target);
+                            console.log('planPoint', options.target.planDate);
                             // 弹出框，进行数值调整
+                            $('#changeDate').show();
+                            $('#changeDate-btn').off("click").on("click", function() {
+                                //先清除再添加事件，保证事件只被注册一次（可能canvas上的计划点被点击多次才开始调整数值，此时若不清除，则会重复添加多次相同事件）
+                                const days = $('#updateDate').val();
+                                if (days) {
+                                    that.movePosition({
+                                        canvas,
+                                        days,
+                                        totalDays,
+                                        target: options.target
+                                    });
+                                }
+                                $('#changeDate').hide(); 
+                            });
                             // 更新本地数据
                             // 上传数据
-                            // 上传数据成功后改变对象位置
+                            // 上传数据成功后改变对象位置 canvas.renderAll()
                         }
                         break;
                     default:
                         console.log('未匹配类型');
                         break;
+                }
+            }
+        });
+    },
+
+    // 调整位置
+    movePosition: function(obj) {
+        const {canvas, days, totalDays, target} = obj;
+        console.log('弹出框', days);
+        const daysNum = parseInt(days);
+        const objects = canvas.getObjects();
+        const chooseDate = target.planDate;
+        objects.forEach(item => {
+            if (item.planName === target.planName) {
+                const rangeTime = this.toolFunc.calculateRangeDays(chooseDate,item.planDate); //被点击对象与当前遍历对象之间相差的日期
+                if(rangeTime >= 0) {
+                    //只有日期在点击对象日期之后的才会受到影响
+                    const newDate = this.toolFunc.getAddDate(item.planDate, daysNum);
+                    console.log(item.planDate,newDate);
+                    item.planDate = newDate;
+                    if (daysNum >= 0 ) {
+                        console.log('单位时间长度',(canvas.width - this.marginLeft)/totalDays);
+                        item.animate('left', '+=' + daysNum * ((canvas.width - this.marginLeft)/totalDays), {
+                            onChange: canvas.renderAll.bind(canvas),
+                        })
+                    } else {
+                        item.animate('left', '-=' + (-daysNum) * ((canvas.width - this.marginLeft)/totalDays), {
+                            onChange: canvas.renderAll.bind(canvas),
+                        })
+                    }
                 }
             }
         });
