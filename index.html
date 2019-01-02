@@ -56,10 +56,10 @@
     </div>
 
     <div id="changeDate">
-        <form id="changeDate-form" class="form-inline">
+        <form id="changeDate-form" class="form-inline" onsubmit="return false;">
             <div class="form-group">
                 <label for="updateDate" class="control-label">调整日期</label>
-                <input type="number" name="updateDate" id="updateDate" class="form-control" />
+                <input type="number" name="updateDate" id="updateDate" class="form-control" autocomplete="off"/>
             </div>
             <a id="changeDate-btn" class="btn btn-default">确定更改</a>
         </form>
