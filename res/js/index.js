@@ -1,5 +1,19 @@
 $(function () {
 
+    //设置任务显示列表位置
+    function setListPosition() {
+        const listDom = $('.pick-list');
+        const canvas = $('#schedule');
+        const offset = canvas.offset();
+        const {top,left} = offset;
+        listDom.css({
+            "top": top+100,
+            "left": left+50
+        });
+        listDom.show();
+    }
+
+
     function getDate(buildSequence = '#1') {
         const p = getProjectName() || '中山项目';
         const b = buildSequence;
@@ -128,6 +142,13 @@ $(function () {
         return data;
     }
 
+    /**
+     *
+     *
+     * @param {object} startDate 开始日期
+     * @param {string} template 模板
+     * @param {string} buildSequence 楼栋
+     */
     function initSchedule(startDate, template, buildSequence) {
         //根据开始日期及模板生成标准格式数据，然后根据数据渲染图表
         const start = dateFormat(startDate);
@@ -186,7 +207,13 @@ $(function () {
         $('#init-form').hide();
     });
 
+    // $('.pick-list').on('click', '.list-item', function (e) { 
+    //     e.preventDefault();
+    //     console.log($(this).find('.plan-name').html());
+    // })
+
     // 进入页面时，获取默认数据（暂定为楼栋#1），生成图表
     getDate();
+    setListPosition();
 
 });

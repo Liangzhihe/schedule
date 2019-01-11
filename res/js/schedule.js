@@ -22,7 +22,8 @@ Schedule.prototype = {
         const canvas = this.getFabricCanvas(this.id);
         if (JSON.stringify(staticCanvas) === "{}") {
             //首次加载时注册事件
-            this.addEvent(canvas, totalDays);
+            this.addEvent(canvas, totalDays); //canvas事件
+            this.addListEvent(canvas); //任务列表点击事件
         };
         staticCanvas = canvas; // 保存生成的fabric对象至全局变量staticCanvas
 
@@ -45,6 +46,7 @@ Schedule.prototype = {
             totalDays,
             renderData
         });
+
     },
 
     // 获取fabric对象
@@ -61,7 +63,13 @@ Schedule.prototype = {
     // 清空画布
     clean: function (canvas) {
         canvas.clear();
-        // canvas.removeListeners();
+        //清除list
+        const list = document.querySelectorAll('.pick-list .list-item');
+        list.forEach(item => {
+            if (!$(item).hasClass('show-all')) {
+                $(item).remove();//同时也已经移除了绑定的事件
+            }
+        });
     },
 
     basicSetUp: function (canvas) {
@@ -365,13 +373,44 @@ Schedule.prototype = {
             point.line1 = lineArr[index];
             point.line2 = lineArr[index + 1];
             canvas.add(point);
-
         });
         console.log('addPlanLine', obj);
+        this.addPickList(data.color,data.planName);
     },
 
     addPlanRect: function (obj) {
         console.log('addPlanRect', obj);
+    },
+
+    // 添加多选任务列表
+    addPickList: function (color,planName) {
+        const listItem =
+        `<div class="list-item">
+            <span class="list-item-color" style="background-color: ${color}"></span>
+            <span class="plan-name">${planName}</span>
+        </div>`;
+
+        $('.pick-list').append(listItem);
+        console.log($(listItem));
+        //注册事件
+    },
+
+    // 任务列表点击事件
+    addListEvent: function(canvas) {
+        const that = this;
+        $('.pick-list').on('click', '.list-item', function (e) { 
+            e.preventDefault();
+            // console.log($(this).find('.plan-name').html());
+            const planName = $(this).find('.plan-name').html();
+            // console.log(canvas);
+            if (planName === '显示全部') {
+                that.toolFunc.displayAll({ canvas });
+            } else {
+                that.toolFunc.hide({ canvas, planName });
+                that.toolFunc.display({ canvas, planName });
+            }
+            console.log('click event ok');
+        })
     },
 
     // 添加点与点之间的连线
@@ -661,7 +700,55 @@ Schedule.prototype = {
             var day = myDate.getDate();
             var today = year + '-' + month + '-' + day;
             return today;
-        }
+        },
+
+        // 隐藏单个plan
+        hide: function (obj) {
+            const { canvas, planName } = obj;
+            const objects = canvas.getObjects();
+            const typeArr = ['planPoint','planRect']; //后期应放在属性中
+            objects.forEach(item => {
+                if (typeArr.indexOf(item.type) !== -1) {
+                    if (item.planName !== planName) {
+                        item.set('opacity', 0).setCoords();
+                        item.line1 && item.line1.set('opacity', 0).setCoords();
+                        item.line2 && item.line2.set('opacity', 0).setCoords();
+                    }
+                }
+            });
+            canvas.requestRenderAll();
+        },
+        // 显示单个plan
+        display: function (obj) {
+            const { canvas, planName } = obj;
+            const objects = canvas.getObjects();
+            const typeArr = ['planPoint','planRect'];
+            objects.forEach(item => {
+                if (typeArr.indexOf(item.type) !== -1) {
+                    if (item.planName === planName) {
+                        item.set('opacity', 1).setCoords();
+                        item.line1 && item.line1.set('opacity', 1).setCoords();
+                        item.line2 && item.line2.set('opacity', 1).setCoords();
+                    }
+                }
+            });
+            canvas.requestRenderAll();
+        },
+
+        // 显示所有plan
+        displayAll: function (obj) {
+            const { canvas} = obj;
+            const objects = canvas.getObjects();
+            const typeArr = ['planPoint','planRect'];
+            objects.forEach(item => {
+                if (typeArr.indexOf(item.type) !== -1) {
+                    item.set('opacity', 1).setCoords();
+                    item.line1 && item.line1.set('opacity', 1).setCoords();
+                    item.line2 && item.line2.set('opacity', 1).setCoords();
+                }
+            });
+            canvas.requestRenderAll();
+        },
 
     }
 }

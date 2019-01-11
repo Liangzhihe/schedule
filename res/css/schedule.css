@@ -21,3 +21,31 @@
 #changeDate-form .form-group {
     margin-bottom: 0;
 }
+
+.pick-list {
+    position: fixed;
+    display: none;
+    border: 1px solid #09f;
+    border-left: 0;
+}
+
+.list-item {
+    padding: 2px;
+    font-size: 0;
+    cursor: pointer;
+}
+
+.list-item-color {
+    display: inline-block;
+    width: 15px;
+    height: 10px;
+    margin: 0 5px;
+}
+
+.plan-name {
+    display: inline-block;
+    font-size: 12px;
+    height: 15px;
+    margin: 0 5px;
+
+}
