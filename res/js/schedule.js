@@ -346,12 +346,11 @@ Schedule.prototype = {
         const w = cWidth - marginLeft; //坐标轴实际刻度长
         const h = cHeight - marginBottom - marginTop;
         const PlanPoint = this.toolFunc.customPlanPoint();
-        const lineArr = that.getLineArr(obj);
-
+        const lineArr = that.getLineArr(obj);// 点与点之间连线
+        const half = (h / buildLayers) / 2; // 每层所占高度的一半（用来设置点的纵坐标）
         pointList.forEach((item, index) => {
             const t = that.toolFunc.calculateRangeDays(axisStartDate, item.date);
             const left = (t / totalDays) * w + marginLeft;
-            const half = (h / buildLayers) / 2;
             const top = cHeight - marginBottom - (item.floor / buildLayers) * h + half;
             const point = new PlanPoint({
                 left: left,
@@ -376,7 +375,7 @@ Schedule.prototype = {
     },
 
     // 添加点与点之间的连线
-    getLineArr: function(obj) {
+    getLineArr: function (obj) {
         const {
             canvas,
             data,
@@ -396,23 +395,24 @@ Schedule.prototype = {
         const h = cHeight - marginBottom - marginTop;
         let arr = [];
         arr.push(null);
-        pointList.forEach((item, index, arrs) => {
-            if (index < arrs.length - 1) {
+        pointList.forEach((item, index, array) => {
+            if (index < array.length - 1) {
                 const t = that.toolFunc.calculateRangeDays(axisStartDate, item.date);
                 const left = (t / totalDays) * w + marginLeft;
                 const half = (h / buildLayers) / 2;
                 const top = cHeight - marginBottom - (item.floor / buildLayers) * h + half;
-                const t2 = that.toolFunc.calculateRangeDays(axisStartDate, arrs[index+1].date);
+
+                const t2 = that.toolFunc.calculateRangeDays(axisStartDate, array[index + 1].date);
                 const left2 = (t2 / totalDays) * w + marginLeft;
-                const top2 = cHeight - marginBottom - (arrs[index+1].floor / buildLayers) * h + half;
-                const line = that.toolFunc.makeDashedLine([left,top,left2,top2],data.color,[3,2]);
+                const top2 = cHeight - marginBottom - (array[index + 1].floor / buildLayers) * h + half;
+                // left,top起点坐标；left2,top2终点坐标；
+                const line = that.toolFunc.makeDashedLine([left, top, left2, top2], data.color, [3, 2]);
                 arr.push(line);
                 canvas.add(line);
             }
         });
         arr.push(null);
         return arr;
-
     },
 
 
@@ -432,8 +432,10 @@ Schedule.prototype = {
                         {
                             console.log('planPoint', options.target);
                             // 弹出框，进行数值调整
+                            $('#changeDate #planName').text(options.target.planName);
+                            $('#changeDate #planDate').text(options.target.planDate);
+                            $('#changeDate #floor').text(options.target.floor);
                             $('#changeDate').show();
-                            $('#updateDate').trigger('click');
                             $('#changeDate-btn').off("click").on("click", function () {
                                 //先清除再添加事件，保证事件只被注册一次（可能canvas上的计划点被点击多次才开始调整数值，此时若不清除，则会重复添加多次相同事件）
                                 const days = $('#updateDate').val();
@@ -483,15 +485,19 @@ Schedule.prototype = {
                     // console.log(item.planDate,newDate);
                     item.planDate = newDate;
                     const unit = (canvas.width - this.marginLeft) / totalDays; //单位时间（每日）长度
+                    //点与点之间连线
+                    item.line1 && item.line1.animate({
+                        'x2': item.left + daysNum * unit
+                    });
+                    item.line2 && item.line2.animate({
+                        'x1': item.left + daysNum * unit
+                    });
+
                     if (daysNum >= 0) {
-                        item.line1 && item.line1.animate({ 'x2': item.left + daysNum * unit});
-                        item.line2 && item.line2.animate({ 'x1': item.left + daysNum * unit});
                         item.animate('left', '+=' + daysNum * unit, {
                             onChange: canvas.renderAll.bind(canvas),
                         });
                     } else {
-                        item.line1 && item.line1.animate({ 'x2': item.left + daysNum * unit});
-                        item.line2 && item.line2.animate({ 'x1': item.left + daysNum * unit});
                         item.animate('left', '-=' + (-daysNum) * unit, {
                             onChange: canvas.renderAll.bind(canvas),
                         });
@@ -512,7 +518,7 @@ Schedule.prototype = {
         },
 
         //虚线
-        makeDashedLine: function (coords, color = '#ccc',strokeDashArray = [6, 3]) {
+        makeDashedLine: function (coords, color = '#ccc', strokeDashArray = [6, 3]) {
             return new fabric.Line(coords, {
                 stroke: color,
                 strokeDashArray,

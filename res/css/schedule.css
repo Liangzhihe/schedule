@@ -10,6 +10,14 @@
 #changeDate {
     display: none;
     position: fixed;
+    bottom: 50px;
     padding: 10px;
+    margin-left: 20px;
+    /* 暂时设置margin */
     border: 1px solid #09f;
+    background-color: #fff;
+}
+
+#changeDate-form .form-group {
+    margin-bottom: 0;
 }
