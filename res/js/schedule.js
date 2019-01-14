@@ -167,7 +167,11 @@ Schedule.prototype = {
                     top: obj.cHeight - obj.marginBottom + 18
                 }));
             }
-            canvas.add(this.toolFunc.makeLine([obj.marginLeft + (w / obj.totalDays) * l, obj.cHeight - obj.marginBottom, obj.marginLeft + (w / obj.totalDays) * l, obj.cHeight - obj.marginBottom - 8], '#09f'));
+            canvas.add(this.toolFunc.makeLine([
+                obj.marginLeft + (w / obj.totalDays) * l,
+                obj.cHeight - obj.marginBottom,
+                obj.marginLeft + (w / obj.totalDays) * l,
+                obj.cHeight - obj.marginBottom - 8], '#09f'));
             canvas.add(this.toolFunc.makeText(month.toString() + '月', {
                 left: obj.marginLeft + (w / obj.totalDays) * (l - element.day / 1.5),
                 top: obj.cHeight - obj.marginBottom + 5
@@ -201,7 +205,11 @@ Schedule.prototype = {
         const w = obj.cWidth - obj.marginLeft;
         const canvas = obj.canvas;
         console.log(w, l, t);
-        canvas.add(this.toolFunc.makeDashedLine([(l / t) * w + obj.marginLeft, obj.cHeight - obj.marginBottom, (l / t) * w + obj.marginLeft, obj.marginTop], '#09f'));
+        canvas.add(this.toolFunc.makeDashedLine([
+            (l / t) * w + obj.marginLeft,
+            obj.cHeight - obj.marginBottom,
+            (l / t) * w + obj.marginLeft,
+            obj.marginTop], '#09f'));
         canvas.add(this.toolFunc.makeText(today, {
             left: (l / t) * w + obj.marginLeft - 28,
             top: obj.marginTop - 12
@@ -221,7 +229,11 @@ Schedule.prototype = {
         const h = cHeight - marginBottom - marginTop;
 
         for (let i = 1; i <= buildLayers; i++) {
-            canvas.add(this.toolFunc.makeLine([marginLeft, (cHeight - marginBottom) - (i / buildLayers) * h, marginLeft + 5, (cHeight - marginBottom) - (i / buildLayers) * h], '#09f'));
+            canvas.add(this.toolFunc.makeLine([
+                marginLeft,
+                (cHeight - marginBottom) - (i / buildLayers) * h,
+                marginLeft + 5,
+                (cHeight - marginBottom) - (i / buildLayers) * h], '#09f'));
             canvas.add(this.toolFunc.makeText(i.toString(), {
                 left: marginLeft - 15,
                 top: (cHeight - marginBottom) - (i / buildLayers) * h + 2
