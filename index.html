@@ -96,6 +96,26 @@
         </form>
     </div>
 
+    <!-- 弹出框，显示楼层进度信息 -->
+    <div id="floorState">
+        <span id="close-floor-state-btn" class="glyphicon glyphicon-remove"></span>
+        <p class="floor-state-title"><span id="floor-number">29</span>层楼层进度信息</p>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-4 control-label">楼层进度信息</label>
+                <div class="col-sm-8">
+                    <p id="floor-state-inf0" class="form-control-static">当前楼层施工进度<span id="floor-state-bool">存在</span>延期</p>
+                </div>
+            </div>
+            <div id="schedule-detail" class="form-group">
+                <label class="col-sm-4 control-label">延期进度详情</label>
+                <div id="schedule-detail-list" class="col-sm-8">
+                    <!-- 迭代生成列表，填充字符串 -->
+                </div>
+            </div>
+        </form>
+    </div>
+
 
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
     <script src="https://cdn.bootcss.com/twitter-bootstrap/3.4.0/js/bootstrap.js"></script>

@@ -422,6 +422,11 @@ Schedule.prototype = {
                 that.toolFunc.display({ canvas, planName });
             }
             console.log('click event ok');
+        });
+
+        $('#close-floor-state-btn').on('click', function (e) {
+            $('#floorState').hide();
+            $('#schedule-detail-list p').remove();
         })
     },
 
@@ -476,7 +481,8 @@ Schedule.prototype = {
                 switch (options.target.type) {
                     case 'floorState':
                         {
-                            console.log('floorState', options.target);
+                            // console.log('floorState', options.target);
+                            that.toolFunc.displayFloorState(options.target);
                         }
                         break;
                     case 'planPoint':
@@ -760,6 +766,39 @@ Schedule.prototype = {
                 }
             });
             canvas.requestRenderAll();
+        },
+
+        // 显示楼层进度状态
+        displayFloorState: function (obj) {
+            console.log(obj);
+            console.log('添加弹窗');
+            // 处理数据
+            const { canvas, floor } = obj;
+            const objects = canvas.getObjects();
+            const typeArr = ['planPoint','planRect'];
+            let infoArr = [];
+            objects.forEach( item => {
+                if (typeArr.indexOf(item.type) !== -1 && item.floor === floor) {
+                    // 显示该楼层进度状态
+                    const planName = item.planName;
+                    const planDate = item.planDate;
+                    const tempStr = `${planName}延期${planDate}`;
+                    infoArr.push(tempStr);
+                }
+            });
+            console.log(infoArr);
+
+            $('#floor-number').html(floor);
+
+            // 添加延期状态
+            const wrap = $('#schedule-detail-list');
+            $('#schedule-detail-list p').remove('.form-control-static');
+            for (let i = 0; i < infoArr.length; i++) {
+                const item = infoArr[i];
+                const tempHtml = `<p class="form-control-static">${item}</p>`;
+                wrap.append(tempHtml);
+            }
+            $('#floorState').show();
         },
 
     }

@@ -49,3 +49,30 @@
     margin: 0 5px;
 
 }
+
+#floorState {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 240px;
+    margin-left: -220px;
+    width: 440px;
+    padding: 10px;
+    border: 1px solid #09f;
+    background-color: #fff;
+    font-size: 18px;
+}
+
+#floorState .floor-state-title {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 24px;
+}
+
+#close-floor-state-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+
+}
