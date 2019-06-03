@@ -617,8 +617,14 @@ Schedule.prototype = {
         getAddDate: function (date, days) {
             const newDate = new Date(date.replace('/-/g', '/'));
             newDate.setDate(newDate.getDate() + days);
-            const month = newDate.getMonth() + 1;
-            const day = newDate.getDate();
+            let month = newDate.getMonth() + 1;
+            let day = newDate.getDate();
+            if (month < 10) {
+                month = '0' + month;
+            }
+            if (day < 10) {
+                day = '0' + day;
+            }
             const time = newDate.getFullYear() + "-" + month + "-" + day;
             // console.log(time);
             return time;
